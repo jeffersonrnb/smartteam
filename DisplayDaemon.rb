@@ -15,8 +15,8 @@ class DisplayDaemon
                 @@arrivalArray[key] = predictions[key]
             end
         end
-        if !arrivalArray.empty?
-            generate_file()
+        if !@@arrivalArray.empty?
+            self.display_html
         end
     end
 
@@ -42,5 +42,10 @@ class DisplayDaemon
             # upload a file or directory to the remote host
             sftp.upload!("index.html", "public_html/index.html")
         end
+    end
+
+    def display_html
+        self.generate_file
+        self.send
     end
 end
