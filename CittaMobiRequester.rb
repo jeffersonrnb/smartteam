@@ -30,8 +30,8 @@ class CittaMobiRequester
     def getPredictionsByTime
         servicesObject = self.getPredictionsArrayByStop
         result = {}
-	servicesObject.each do |service|
-             if service["activeVehicles"] > 0
+        servicesObject.each do |service|
+            if !service["vehicles"].empty?
                 bestTime = service["vehicles"][0]["age"] > service["vehicles"][0]["prediction"] ? 1000000 :
                     service["vehicles"][0]["prediction"] - service["vehicles"][0]["age"]
                 service["vehicles"].each do |vehicle|
@@ -46,6 +46,17 @@ class CittaMobiRequester
             end
         end
         result
+    end
+
+    def getRouteHasVehicles(routeCode)
+        hasVehicles = false
+        servicesObject = self.getPredictionsArrayByStop
+        servicesObject.each do |service|
+            if service["routeCode"] == routeCode && !service["vehicles"].empty?
+                hasVehicles = true
+            end
+        end
+        hasVehicles
     end
 end
 
