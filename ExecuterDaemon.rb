@@ -15,6 +15,7 @@ class ExecuterDaemon
 
     def run
         self.readServices
+        `espeak -vpt -g 4 \"Escolha uma linha para pedir seu ponto através dos botões acessíveis\"`
 
         # loop on all the pins, when the button pin has
         # 0 value (button is pressed) the led will turn
@@ -27,9 +28,14 @@ class ExecuterDaemon
             result = `python ButtonCheck.py #{button}`
             puts result
             if result.to_i == 1
-                @@requestsBus[key] = key
-                `espeak -vpt -g 4 \"Seu pedido foi feito, o próximo ônibus irá parar para você\"`
+                if CittaMobiRequester.new.getRouteHasVehicles(key)
+                    @@requestsBus[key] = key
+                    `espeak -vpt -g 4 \"Seu pedido foi feito, o próximo ônibus irá parar para você\"`
+                else
+                    `espeak -vpt -g 4 \"Não foi possível achar um ônibus próximo deste ponto para essa linha\"`
+                end
                 choice = true
+
                 break
               end
           end
@@ -37,18 +43,18 @@ class ExecuterDaemon
         end
 
         display = DisplayDaemon.new
-	display.update(@@requestsBus)
-	puts display.display_html()
+        display.update(@@requestsBus)
+        puts display.generate_html()
     end
 
     def readServices
         servicesString = CittaMobiRequester.new.getServicesNames
         executeString = "Olá, listarei para você as linhas disponíveis nesse ponto: "
         `espeak -vpt -g 4 \"#{executeString}\"`
-	servicesString.each do |string|
+        servicesString.each do |string|
             `espeak -vpt -g 4 \"#{string}\"`
-       	    sleep 0.3
-	 end
+            sleep 0.3
+        end
     end
 end
 
