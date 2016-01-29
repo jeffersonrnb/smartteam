@@ -5,6 +5,7 @@ require 'cgi'
 require 'rubygems'
 require_relative 'CittaMobiRequester'
 require_relative 'DisplayDaemon'
+require_relative 'DictionaryHelper'
 require 'rpi_gpio'
 
 RPi::GPIO.set_numbering :board
@@ -44,7 +45,7 @@ class ExecuterDaemon
 
         display = DisplayDaemon.new
         display.update(@@requestsBus)
-        puts display.generate_html()
+        display.read_active_requests
     end
 
     def readServices
@@ -52,6 +53,7 @@ class ExecuterDaemon
         executeString = "Olá, listarei para você as linhas disponíveis nesse ponto: "
         `espeak -vpt -g 4 \"#{executeString}\"`
         servicesString.each do |string|
+            string = DictionaryHelper.new.byExtense(string)
             `espeak -vpt -g 4 \"#{string}\"`
             sleep 0.3
         end

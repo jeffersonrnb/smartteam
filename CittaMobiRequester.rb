@@ -22,7 +22,7 @@ class CittaMobiRequester
         servicesString = self.getServicesArrayByStop
         stringArray = Array.new
         servicesString.each do |service|
-            stringArray.push("#{service['routeCode']}\ #{service['routeMnemonic']}")
+            stringArray.push("#{service['routeCode']}\ #{service['routeMnemonic'].upcase}")
         end
         stringArray
     end
@@ -40,8 +40,12 @@ class CittaMobiRequester
                         bestTime = timeToArrival
                     end
                 end
-                if bestTime < 300
-                    result[service["routeCode"]] = service["routeMnemonic"]
+                if bestTime < 5000
+                    result[service["routeCode"]] =
+                    {
+                        "routeMnemonic" => service["routeMnemonic"],
+                        "time" => bestTime
+                    }
                 end
             end
         end
@@ -59,5 +63,3 @@ class CittaMobiRequester
         hasVehicles
     end
 end
-
-puts CittaMobiRequester.new.getPredictionsByTime

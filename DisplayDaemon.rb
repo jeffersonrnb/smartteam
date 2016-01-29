@@ -1,4 +1,5 @@
 require_relative 'CittaMobiRequester'
+require_relative 'DictionaryHelper'
 require 'net/sftp'
 
 class DisplayDaemon
@@ -22,9 +23,9 @@ class DisplayDaemon
 
     def generate_html()
         string = "<html><head><title>Alerta ao motorista e cobrador</title></head><body>"
-        @@arrivalArray.each do |key, time|
-            string += "<h1> Motorista e cobrador da linha #{key}: </h1>"
-            string += "<h1> Parada solicitada por um deficiente visual, favor prestar auxílio"
+        @@arrivalArray.each do |key, service|
+            string += "\n<h1> Motorista e cobrador da linha #{key} #{service["routeMnemonic"]}: </h1>"
+            string += "\n<h1> Parada solicitada por um deficiente visual, favor prestar auxílio"
         end
 	   string += "</body></html>"
 	   string
@@ -44,8 +45,18 @@ class DisplayDaemon
         end
     end
 
+    def read_active_requests
+        @@arrivalArray.each do |key, service|
+            string = "Linha #{key} #{service["routeMnemonic"].upcase}"
+            string = DictionaryHelper.new.byExtense(string)
+            `espeak -vpt -g 4 \"#{string}\"`
+            `espeak -vpt -g 4 \"previsão para chegada #{(service["time"] / 60).ceil} minutos\"`
+
+        end
+    end
+
     def display_html
         self.generate_file
-        self.send
+        #self.send
     end
 end
