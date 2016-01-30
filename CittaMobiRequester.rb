@@ -22,7 +22,7 @@ class CittaMobiRequester
         servicesString = self.getServicesArrayByStop
         stringArray = Array.new
         servicesString.each do |service|
-            stringArray.push("#{service['routeCode']}\ #{service['routeMnemonic']}")
+            stringArray.push("#{service['routeCode']}\ #{service['routeMnemonic'].upcase}")
         end
         stringArray
     end
@@ -30,8 +30,8 @@ class CittaMobiRequester
     def getPredictionsByTime
         servicesObject = self.getPredictionsArrayByStop
         result = {}
-	servicesObject.each do |service|
-             if service["activeVehicles"] > 0
+        servicesObject.each do |service|
+            if !service["vehicles"].empty?
                 bestTime = service["vehicles"][0]["age"] > service["vehicles"][0]["prediction"] ? 1000000 :
                     service["vehicles"][0]["prediction"] - service["vehicles"][0]["age"]
                 service["vehicles"].each do |vehicle|
@@ -40,13 +40,60 @@ class CittaMobiRequester
                         bestTime = timeToArrival
                     end
                 end
-                if bestTime < 300
-                    result[service["routeCode"]] = service["routeMnemonic"]
+                if bestTime < 5000
+                    result[service["routeCode"]] =
+                    {
+                        "routeMnemonic" => service["routeMnemonic"],
+                        "wheelchairNeeds" => false,
+                        "time" => bestTime
+                    }
                 end
             end
         end
         result
     end
-end
 
-puts CittaMobiRequester.new.getPredictionsByTime
+    def getPredictionsByTimeWheelchair
+        servicesObject = self.getPredictionsArrayByStop
+        result = {}
+        servicesObject.each do |service|
+            if !service["vehicles"].empty?
+                bestTime = 1000000
+                service["vehicles"].each do |vehicle|
+                    if vehicle["wheelchair"]
+                        timeToArrival = vehicle["prediction"] - vehicle["age"]
+                        if timeToArrival < bestTime
+                            bestTime = timeToArrival
+                        end
+                    end
+                end
+                if bestTime < 5000
+                    result[service["routeCode"]] =
+                    {
+                        "routeMnemonic" => service["routeMnemonic"],
+                        "wheelchairNeeds" => true,
+                        "time" => bestTime
+                    }
+                end
+            end
+        end
+        result
+    end
+
+    def getRouteHasVehicles(routeCode, wheelchairNeeds)
+        hasVehicles = false
+        servicesObject = self.getPredictionsArrayByStop
+        servicesObject.each do |service|
+            if service["routeCode"] == routeCode && !service["vehicles"].empty? && !wheelchairNeeds
+                hasVehicles = true
+            elsif service["routeCode"] == routeCode && !service["vehicles"].empty? && wheelchairNeeds
+                service["vehicles"].each do |vehicle|
+                    if vehicle["wheelchair"]
+                        hasVehicles = true
+                    end
+                end
+            end
+        end
+        hasVehicles
+    end
+end
