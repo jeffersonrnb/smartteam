@@ -68,6 +68,10 @@ class DisplayDaemon
 
     def display_html
         self.generate_file
+<<<<<<< HEAD
         self.send
+=======
+        #self.send
+>>>>>>> 331e23ebcc6b107204c04366d634fbe57c36f63c
     end
 end
